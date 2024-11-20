@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download Multiple Files</title>
+    <style>
+        .download-button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: #007BFF;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 5px;
+            transition: background-color 0.3s;
+        }
+        .download-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Download Your Files</h1>
+    
+    <a href="animated_flag.txt" class="download-button" download>animated_Flag</a>
+    <a href="Boundry_Polygon fill.txt" class="download-button" download>boundry_polygon fill</a>
+    <a href="bresenham_circle and line.txt" class="download-button" download>bresenham circle and line</a>
+    <a href="checkers_board_texture mapping.txt" class="download-button" download>checkers_boards textures</a>
+    <a href="circle_triangle_polygon_ass1.txt" class="download-button" download>basic shapes_ass1</a>
+    <a href="cohen_sutterland.txt" class="download-button" download>cohen_sutterland</a>
+    <a href="DDA AND MOVING CYCLE.txt" class="download-button" download>DDA AND MOVING CYCLE</a>
+    <a href="Draw cube and rotating.txt" class="download-button" download>cube_drawing and rotation</a>
+    <a href="Sanline.txt" class="download-button" download>scanline_algo</a>
+    <a href="texture_cube.txt" class="download-button" download>texture_cube</a>
+    <a href="triangle_and rotate.txt" class="download-button" download>triangle and rotate</a>
+    
+
+    <script>
+        // Optional: You can add JavaScript functionality if needed
+        const buttons = document.querySelectorAll('.download-button');
+        buttons.forEach(button => {
+            button.addEventListener('click', function() {
+                console.log(`Download started for: ${this.textContent}`);
+            });
+        });
+    </script>
+
+</body>
+</html>

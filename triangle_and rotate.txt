@@ -1,0 +1,97 @@
+#include <GL/glut.h>
+#include <cmath>
+
+float angle = 0.0f; // Initial angle for rotation
+float triangle[3][2] = {
+    {-0.5f, -0.5f}, // Vertex 1 (x1, y1)
+    {0.5f, -0.5f},  // Vertex 2 (x2, y2)
+    {0.0f, 0.5f}    // Vertex 3 (x3, y3)
+};
+
+float fixedPoint[2] = {0.5f, 0.5f}; // Fixed point for rotation
+
+// Function to rotate a point about the origin
+void rotateAboutOrigin(float &x, float &y, float angle) {
+    float radians = angle * M_PI / 180.0f;
+    float tempX = x;
+    x = x * cos(radians) - y * sin(radians);
+    y = tempX * sin(radians) + y * cos(radians);
+}
+
+// Function to rotate a point about a fixed point
+void rotateAboutFixedPoint(float &x, float &y, float fx, float fy, float angle) {
+    // Translate the point to the origin
+    x -= fx;
+    y -= fy;
+
+    // Rotate the point
+    rotateAboutOrigin(x, y, angle);
+
+    // Translate the point back
+    x += fx;
+    y += fy;
+}
+
+// Function to draw the triangle
+void drawTriangle() {
+    glBegin(GL_TRIANGLES);
+    glVertex2f(triangle[0][0], triangle[0][1]);
+    glVertex2f(triangle[1][0], triangle[1][1]);
+    glVertex2f(triangle[2][0], triangle[2][1]);
+    glEnd();
+}
+
+// Function to update the rotation angle and redraw the scene
+void update(int value) {
+    angle += 1.0f; // Increment the angle for rotation
+    if (angle > 360) {
+        angle -= 360;
+    }
+
+    // Rotate each vertex of the triangle about the origin
+    for (int i = 0; i < 3; i++) {
+        rotateAboutOrigin(triangle[i][0], triangle[i][1], 1.0f);  // Rotate about the origin
+    }
+
+    // Rotate each vertex of the triangle about the fixed point
+    for (int i = 0; i < 3; i++) {
+        rotateAboutFixedPoint(triangle[i][0], triangle[i][1], fixedPoint[0], fixedPoint[1], 1.0f); // Rotate about the fixed point
+    }
+
+    glutPostRedisplay(); // Redisplay the updated scene
+    glutTimerFunc(16, update, 0); // Keep updating every 16ms (~60 FPS)
+}
+
+// Function to initialize OpenGL
+void initOpenGL() {
+    glClearColor(1.0, 1.0, 1.0, 1.0);  // Set background color to white
+    glMatrixMode(GL_PROJECTION);  // Set projection matrix
+    glLoadIdentity();
+    gluOrtho2D(-1.0, 1.0, -1.0, 1.0); // Set orthogonal view (-1,1) on both axes
+}
+
+// Display function to render the scene
+void display() {
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glColor3f(0.0f, 0.0f, 1.0f); // Set color to blue for the triangle
+    drawTriangle(); // Draw the rotating triangle
+
+    glFlush();
+    glutSwapBuffers();
+}
+
+int main(int argc, char** argv) {
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+    glutInitWindowSize(500, 500);
+    glutCreateWindow("Rotating Triangle");
+
+    initOpenGL();
+
+    glutDisplayFunc(display); // Register display function
+    glutTimerFunc(25, update, 0); // Register update function
+
+    glutMainLoop(); // Enter the main loop to start rendering
+    return 0;
+}

@@ -1,0 +1,117 @@
+DDA Line, Circle Algorithm, and Moving Cycle
+
+
+#include <GL/glut.h>
+#include <math.h>
+#include <stdio.h>
+
+float angle = 0.0f; // To animate the moving cycle
+
+// DDA Line Algorithm
+void DDA_Line(float x1, float y1, float x2, float y2) {
+    float dx = x2 - x1;
+    float dy = y2 - y1;
+    float steps = fabs(dx) > fabs(dy) ? fabs(dx) : fabs(dy);
+    
+    float xIncrement = dx / steps;
+    float yIncrement = dy / steps;
+    
+    float x = x1;
+    float y = y1;
+    
+    glBegin(GL_POINTS);
+    for (int i = 0; i <= steps; i++) {
+        glVertex2f(round(x), round(y));
+        x += xIncrement;
+        y += yIncrement;
+    }
+    glEnd();
+}
+
+// DDA Circle Algorithm (using parametric equations)
+void DDA_Circle(int xc, int yc, int r) {
+    float x = 0, y = r;
+    float p = 3 - 2 * r;
+    while (x <= y) {
+        glBegin(GL_POINTS);
+        glVertex2f(xc + x, yc + y);
+        glVertex2f(xc - x, yc + y);
+        glVertex2f(xc + x, yc - y);
+        glVertex2f(xc - x, yc - y);
+        glVertex2f(xc + y, yc + x);
+        glVertex2f(xc - y, yc + x);
+        glVertex2f(xc + y, yc - x);
+        glVertex2f(xc - y, yc - x);
+        glEnd();
+        
+        x++;
+        if (p < 0) {
+            p = p + 4 * x + 6;
+        } else {
+            y--;
+            p = p + 4 * (x - y) + 10;
+        }
+    }
+}
+
+// Function to draw a cycle (simple representation)
+void drawCycle(float centerX, float centerY, float radius) {
+    // Draw the wheel of the cycle (circle)
+    glColor3f(0.0f, 0.0f, 1.0f);
+    DDA_Circle(centerX, centerY, radius);
+
+    // Draw the spokes of the cycle
+    glColor3f(1.0f, 0.0f, 0.0f);
+    for (int i = 0; i < 6; i++) {
+        float angle = (i * 60.0f) * M_PI / 180.0f; // Spokes at 60-degree intervals
+        float x_end = centerX + radius * cos(angle);
+        float y_end = centerY + radius * sin(angle);
+        DDA_Line(centerX, centerY, x_end, y_end);
+    }
+}
+
+// Function to animate the moving cycle
+void update(int value) {
+    angle += 1.0f;
+    if (angle > 360.0f) angle -= 360.0f; // Reset angle if it exceeds 360 degrees
+    
+    glutPostRedisplay(); // Request a redraw
+    glutTimerFunc(16, update, 0); // Call update again in 16 ms (60 FPS)
+}
+
+// Display function to draw the scene
+void display() {
+    glClear(GL_COLOR_BUFFER_BIT);  // Clear the screen
+    glLoadIdentity();  // Reset transformations
+
+    // Translate the cycle across the screen
+    float cycleX = 150.0f + 100.0f * sin(angle * M_PI / 180.0f);  // Horizontal movement (sine wave)
+    float cycleY = 100.0f + 50.0f * cos(angle * M_PI / 180.0f);   // Vertical movement (cosine wave)
+    
+    drawCycle(cycleX, cycleY, 30); // Draw the moving cycle
+
+    glutSwapBuffers();  // Swap the buffers to display the image
+}
+
+// Function to initialize OpenGL
+void initOpenGL() {
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);  // Set background color to white
+    glMatrixMode(GL_PROJECTION);  // Set up the projection matrix
+    gluOrtho2D(0, 400, 0, 400);  // 2D orthographic view with coordinates between 0 and 400
+    glMatrixMode(GL_MODELVIEW);   // Switch back to the model-view matrix
+}
+
+// Main function to initialize GLUT and start the program
+int main(int argc, char **argv) {
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+    glutInitWindowSize(500, 500);
+    glutCreateWindow("Moving Cycle with DDA Line and Circle");
+    
+    initOpenGL();
+    glutDisplayFunc(display);  // Set the display callback
+    glutTimerFunc(25, update, 0);  // Start the update timer
+    
+    glutMainLoop();  // Enter the GLUT event loop
+    return 0;
+}

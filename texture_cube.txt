@@ -1,0 +1,111 @@
+#include <GL/glut.h>
+#include <GL/glu.h>
+#include <iostream>
+#include "stb_image.h"  // Include stb_image header for texture loading
+
+GLuint textureID;
+
+void loadTexture(const char *filename) {
+    int width, height, channels;
+    unsigned char *data = stbi_load(filename, &width, &height, &channels, 0);
+    if (data) {
+        glGenTextures(1, &textureID);
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        stbi_image_free(data);  // Free the image memory after loading
+    } else {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+}
+
+// Function to set up the cube with textures
+void drawTexturedCube() {
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    glBegin(GL_QUADS);
+
+    // Front face
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, -1.0f, 1.0f);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(1.0f, -1.0f, 1.0f);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(1.0f, 1.0f, 1.0f);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f, 1.0f, 1.0f);
+
+    // Back face
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(-1.0f, -1.0f, -1.0f);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(-1.0f, 1.0f, -1.0f);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(1.0f, 1.0f, -1.0f);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(1.0f, -1.0f, -1.0f);
+
+    // Left face
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, -1.0f, -1.0f);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(-1.0f, -1.0f, 1.0f);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(-1.0f, 1.0f, 1.0f);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f, 1.0f, -1.0f);
+
+    // Right face
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(1.0f, -1.0f, -1.0f);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(1.0f, -1.0f, 1.0f);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(1.0f, 1.0f, 1.0f);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(1.0f, 1.0f, -1.0f);
+
+    // Top face
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f, 1.0f, 1.0f);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(1.0f, 1.0f, 1.0f);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(1.0f, 1.0f, -1.0f);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, 1.0f, -1.0f);
+
+    // Bottom face
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, -1.0f, 1.0f);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(1.0f, -1.0f, 1.0f);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(1.0f, -1.0f, -1.0f);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f, -1.0f, -1.0f);
+
+    glEnd();
+}
+
+// Function to initialize OpenGL
+void initOpenGL() {
+    glClearColor(0.0, 0.0, 0.0, 1.0); // Set background color to black
+    glEnable(GL_TEXTURE_2D);           // Enable 2D texturing
+    glEnable(GL_DEPTH_TEST);           // Enable depth testing
+}
+
+// Display function
+void display() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
+    glTranslatef(0.0f, 0.0f, -5.0f); // Move the cube away from the camera
+
+    glRotatef(30.0f, 1.0f, 1.0f, 0.0f);  // Rotate the cube for animation
+
+    drawTexturedCube();  // Draw the cube
+
+    glutSwapBuffers();
+}
+
+// Function to handle resizing of the window
+void reshape(int w, int h) {
+    glViewport(0, 0, w, h);  // Set the viewport size
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(45.0f, (GLfloat)w / (GLfloat)h, 0.1f, 100.0f);  // Set the perspective
+    glMatrixMode(GL_MODELVIEW);
+}
+
+int main(int argc, char **argv) {
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+    glutInitWindowSize(500, 500);
+    glutCreateWindow("Textured Cube");
+
+    loadTexture("texture.jpg");  // Load the texture image
+
+    initOpenGL();
+
+    glutDisplayFunc(display);    // Set the display function
+    glutReshapeFunc(reshape);    // Set the reshape function
+
+    glutMainLoop();  // Start the main loop
+    return 0;
+}

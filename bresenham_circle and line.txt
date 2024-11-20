@@ -1,0 +1,132 @@
+Bransenham line drawing : 
+#include <GL/glut.h>
+
+// Function to draw the line
+void Draw() {
+    GLfloat x1 = 100, x2 = 400, y1 = 100, y2 = 400;
+    GLfloat m, p, x, y, dx, dy;
+
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    dx = x2 - x1;
+    dy = y2 - y1;
+
+    if (dx == 0) {
+        m = dy; // Vertical line slope
+    } else {
+        m = dy / dx; // General slope calculation
+    }
+
+    p = 2 * dy - dx; // Initial decision parameter
+    x = x1;
+    y = y1;
+
+    glBegin(GL_POINTS);
+    while (x <= x2) {
+        glVertex2f(x, y); // Plot the point
+        x = x + 1;
+        if (p >= 0) {
+            y = y + 1;
+            p = p + 2 * dy - 2 * dx;
+        } else {
+            y = y;
+            p = p + 2 * dy;
+        }
+    }
+    glEnd();
+
+    glFlush();
+}
+
+// Initialization function
+void MYInit() {
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(0, 500, 0, 500); // Set the coordinate system
+    glMatrixMode(GL_MODELVIEW);
+}
+
+// Main function
+int main(int argc, char** argv) {
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+    glutInitWindowSize(500, 500);
+    glutInitWindowPosition(0, 0);
+    glutCreateWindow("Bresenham's Line Drawing Algorithm");
+    MYInit();
+    glutDisplayFunc(Draw);
+    glutMainLoop();
+    return 0;
+}
+######################################################################################################
+Brasenham circle drawing :
+#include <GL/glut.h>
+#include <cmath>
+
+// Function to plot points on the circle
+void plot_point(int xc, int yc, int x, int y)
+{
+    glBegin(GL_POINTS);
+    glVertex2i(xc + x, yc + y);
+    glVertex2i(xc + x, yc - y);
+    glVertex2i(xc - x, yc + y);
+    glVertex2i(xc - x, yc - y);
+    glVertex2i(xc + y, yc + x);
+    glVertex2i(xc + y, yc - x);
+    glVertex2i(xc - y, yc + x);
+    glVertex2i(xc - y, yc - x);
+    glEnd();
+}
+
+// Function to draw a circle using Bresenham's algorithm
+void bresenham_circle(int xc, int yc, int r)
+{
+    int x = 0;
+    int y = r;
+    int p = 3 - 2 * r;
+    
+    plot_point(xc, yc, x, y); // Plot initial points
+
+    while (x < y)
+    {
+        x++;
+        if (p < 0)
+        {
+            p = p + 4 * x + 6;
+        }
+        else
+        {
+            y--;
+            p = p + 4 * (x - y) + 10;
+        }
+        
+        plot_point(xc, yc, x, y); // Plot updated points
+    }
+    glFlush();
+}
+
+// Function to initialize and draw the circle
+void draw_circle()
+{
+    glClear(GL_COLOR_BUFFER_BIT);
+    int xc = 300, yc = 250, r = 125;
+    bresenham_circle(xc, yc, r);
+}
+
+// Main function to set up OpenGL and GLUT window
+int main(int argc, char** argv)
+{
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+    glutInitWindowPosition(0, 0);
+    glutInitWindowSize(640, 480);
+    glutCreateWindow("Bresenham Circle");
+
+    glClearColor(1.0, 1.0, 1.0, 0.0);  // Set background color to white
+    glColor3f(0.0, 0.0, 0.0);          // Set drawing color to black
+    gluOrtho2D(0, 640, 0, 480);        // Set the orthogonal projection
+    glutDisplayFunc(draw_circle);      // Set display function to draw the circle
+    glutMainLoop();                    // Start the GLUT main loop
+
+    return 0;
+}

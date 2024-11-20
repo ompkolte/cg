@@ -1,0 +1,77 @@
+#include <GL/glut.h>
+#include <cmath>
+
+// Control points for the Bezier curve to represent the flag's shape
+float P0[2] = {-0.5f, -0.5f};
+float P1[2] = {-0.2f, -0.8f};
+float P2[2] = {0.2f, -0.8f};
+float P3[2] = {0.5f, -0.5f};
+
+// Animation parameters
+float flagSway = 0.0f;  // Control the flag sway
+float swaySpeed = 0.05f;  // Speed of the flag sway
+
+// Function to calculate the cubic Bezier curve point for a given t
+void bezier(float t, float P[4][2], float *x, float *y) {
+    float u = 1.0f - t;
+    *x = u * u * u * P[0][0] + 3 * u * u * t * P[1][0] + 3 * u * t * t * P[2][0] + t * t * t * P[3][0];
+    *y = u * u * u * P[0][1] + 3 * u * u * t * P[1][1] + 3 * u * t * t * P[2][1] + t * t * t * P[3][1];
+}
+
+// Function to draw the Bezier curve for the flag
+void drawFlag() {
+    glBegin(GL_LINE_STRIP);
+    for (float t = 0.0f; t <= 1.0f; t += 0.01f) {
+        float x, y;
+        bezier(t, (float[4][2]){{P0[0], P0[1]}, {P1[0], P1[1]}, {P2[0], P2[1]}, {P3[0], P3[1]}}, &x, &y);
+        glVertex2f(x, y);
+    }
+    glEnd();
+}
+
+// Function to update the flag sway (simulate the flag flapping)
+void updateFlag(int value) {
+    // Modify the control points based on a sinusoidal function to simulate motion
+    P1[1] = -0.8f + 0.2f * sin(flagSway);  // Flag bottom left curve control point
+    P2[1] = -0.8f + 0.2f * sin(flagSway);  // Flag bottom right curve control point
+    flagSway += swaySpeed;
+    if (flagSway > 2 * M_PI) {
+        flagSway -= 2 * M_PI;  // Reset the sway angle
+    }
+    glutPostRedisplay();  // Redisplay the scene with updated flag position
+    glutTimerFunc(16, updateFlag, 0);  // Continue updating every 16 ms (~60 FPS)
+}
+
+// Function to initialize OpenGL
+void initOpenGL() {
+    glClearColor(1.0, 1.0, 1.0, 1.0);  // Set background color to white
+    glMatrixMode(GL_PROJECTION);  // Set projection matrix
+    glLoadIdentity();
+    gluOrtho2D(-1.0, 1.0, -1.0, 1.0);  // Set orthogonal view (-1,1) on both axes
+}
+
+// Display function to render the flag
+void display() {
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glColor3f(1.0f, 0.0f, 0.0f);  // Set color to red for the flag
+    drawFlag();  // Draw the flag using Bezier curve
+
+    glFlush();
+    glutSwapBuffers();
+}
+
+int main(int argc, char** argv) {
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+    glutInitWindowSize(500, 500);
+    glutCreateWindow("Animating Flag Using Bezier Curve");
+
+    initOpenGL();
+
+    glutDisplayFunc(display); // Register display function
+    glutTimerFunc(25, updateFlag, 0); // Register update function for flag motion
+
+    glutMainLoop();  // Enter the main loop to start rendering
+    return 0;
+}

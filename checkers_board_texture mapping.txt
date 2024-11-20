@@ -1,0 +1,95 @@
+#include <GL/glut.h>
+#include <stdio.h>
+
+// Texture size and checkboard colors
+#define TEX_SIZE 256
+#define SQUARE_SIZE 32
+
+// Checkerboard texture
+GLubyte texture[TEX_SIZE][TEX_SIZE][3];
+
+// Function to generate a checkerboard pattern
+void createCheckerboardTexture() {
+    int i, j;
+    for (i = 0; i < TEX_SIZE; i++) {
+        for (j = 0; j < TEX_SIZE; j++) {
+            // Determine whether it's a black or white square
+            int color = ((i / SQUARE_SIZE + j / SQUARE_SIZE) % 2 == 0) ? 255 : 0;
+            
+            texture[i][j][0] = color; // Red
+            texture[i][j][1] = color; // Green
+            texture[i][j][2] = color; // Blue
+        }
+    }
+}
+
+// Function to initialize OpenGL
+void initOpenGL() {
+    glClearColor(1.0, 1.0, 1.0, 1.0);
+    glEnable(GL_TEXTURE_2D); // Enable texture mapping
+    glGenTextures(1, &texture[0][0][0]); // Generate texture
+    
+    glBindTexture(GL_TEXTURE_2D, texture[0][0][0]); // Bind the texture
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TEX_SIZE, TEX_SIZE, 0, GL_RGB, GL_UNSIGNED_BYTE, texture); // Upload texture
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Texture filtering
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Texture magnification filter
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // Horizontal wrapping
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // Vertical wrapping
+}
+
+// Function to render the scene
+void display() {
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glLoadIdentity();
+    glTranslatef(0.0f, 0.0f, -5.0f);
+
+    // Enable the texture to be applied to the quad
+    glBindTexture(GL_TEXTURE_2D, texture[0][0][0]);
+
+    // Draw a quad with texture mapping
+    glBegin(GL_QUADS);
+
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex2f(-2.0f, -2.0f);
+
+    glTexCoord2f(1.0f, 0.0f);
+    glVertex2f(2.0f, -2.0f);
+
+    glTexCoord2f(1.0f, 1.0f);
+    glVertex2f(2.0f, 2.0f);
+
+    glTexCoord2f(0.0f, 1.0f);
+    glVertex2f(-2.0f, 2.0f);
+
+    glEnd();
+
+    glutSwapBuffers();
+}
+
+// Function to handle resizing the window
+void reshape(int w, int h) {
+    glViewport(0, 0, w, h);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(-3.0, 3.0, -3.0, 3.0);  // Set the 2D orthogonal projection
+    glMatrixMode(GL_MODELVIEW);
+}
+
+// Main function to initialize GLUT and start the program
+int main(int argc, char** argv) {
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+    glutInitWindowSize(500, 500);
+    glutCreateWindow("Checkerboard Texture Mapping");
+
+    createCheckerboardTexture(); // Create checkerboard texture
+    initOpenGL(); // Initialize OpenGL
+
+    glutDisplayFunc(display); // Set the display callback
+    glutReshapeFunc(reshape); // Set the reshape callback
+
+    glutMainLoop(); // Enter the GLUT event loop
+    return 0;
+}
